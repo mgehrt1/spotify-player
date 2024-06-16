@@ -4,7 +4,7 @@ import * as CryptoJS from "crypto-js";
 import express from "express";
 import axios from "axios";
 
-const clientId = ""; // TODO store this somewhere safe
+const clientId = "f320f2d749cc4f418ec80bca8e304393"; // TODO store this somewhere safe
 const redirectUri = "http://localhost:3000/callback";
 let myExtensionContext: vscode.ExtensionContext;
 let momento: vscode.Memento;
@@ -17,8 +17,6 @@ export function activate(context: vscode.ExtensionContext) {
     provider = new SpotifyPlayerViewProvider(context.extensionUri);
 
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SpotifyPlayerViewProvider.viewType, provider));
-
-    provider.isLoggedIn();
 }
 
 class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
@@ -37,6 +35,7 @@ class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
         };
 
         webviewView.webview.html = this.getWebviewContent(webviewView.webview);
+        // provider.isLoggedIn(); TODO: add back once we figure out how to revalidate every hour
 
         webviewView.webview.onDidReceiveMessage(
             (message) => {
