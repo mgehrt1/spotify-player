@@ -114,7 +114,7 @@ const getNonce = () => {
 
 const handleError = (error: any) => {
     if (axios.isAxiosError(error)) {
-        console.error(`${error.status}: ${error.message}`);
+        console.error(`${error.response?.status}: ${error.message}`);
     } else {
         console.error("Unknown error");
     }
