@@ -65,12 +65,28 @@ const login = () => {
     controllerContainer.style.display = 'flex';
 };
 
+const displayCurrentSong = (currently_playing) => {
+    const songTitle = document.createElement('h2');
+    const songTitleText = document.createTextNode(currently_playing.name);
+    songTitle.appendChild(songTitleText);
+
+    const albumImage = new Image();
+    albumImage.src = currently_playing.album.images[0].url;
+
+    const body = document.getElementById('test');
+    body.appendChild(songTitle);
+    body.appendChild(albumImage);
+};
+
 window.addEventListener('message', event => {
     const message = event.data;
     
     switch (message.command) {
         case 'login':
             login();
+            break;
+        case 'currently_playing':
+            displayCurrentSong(message.queue_info.currently_playing);
             break;
         default:
             break;

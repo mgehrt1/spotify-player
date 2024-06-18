@@ -1,28 +1,27 @@
 import * as vscode from "vscode";
-import * as crypto from "crypto";
-import * as CryptoJS from "crypto-js";
 import express from "express";
 import axios from "axios";
+import { generateRandomString, sha256, base64encode, getToken } from "./auth";
 
 const clientId = "f320f2d749cc4f418ec80bca8e304393"; // TODO store this somewhere safe
 const redirectUri = "http://localhost:3000/callback";
 let myExtensionContext: vscode.ExtensionContext;
-let momento: vscode.Memento;
+let memento: vscode.Memento;
 let provider: SpotifyPlayerViewProvider;
 
 export function activate(context: vscode.ExtensionContext) {
     myExtensionContext = context;
-    momento = myExtensionContext.globalState;
+    memento = myExtensionContext.globalState;
 
     provider = new SpotifyPlayerViewProvider(context.extensionUri);
 
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SpotifyPlayerViewProvider.viewType, provider));
 }
 
-class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
+export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "spotify-player";
 
-    private view?: vscode.WebviewView;
+    public view?: vscode.WebviewView;
 
     constructor(private readonly extensionUri: vscode.Uri) {}
 
@@ -50,10 +49,10 @@ class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
                         handlePause();
                         break;
                     case "previous":
-                        vscode.window.showInformationMessage("Previous button clicked");
+                        handlePrevious();
                         break;
                     case "next":
-                        vscode.window.showInformationMessage("Next button clicked");
+                        handleNext();
                         break;
                     default:
                         break;
@@ -65,7 +64,7 @@ class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
     }
 
     public isLoggedIn() {
-        const access_token = momento.get("access_token");
+        const access_token = memento.get("access_token");
         if (this.view && access_token) {
             this.view.webview.postMessage({ command: "login" });
         }
@@ -81,14 +80,14 @@ class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
 			<html lang="en">
                 <head>
                     <meta charset="UTF-8">
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src https://i.scdn.co;">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
                     <link href="${styleUri}" rel="stylesheet">
 
                     <title>Spotify Player</title>
                 </head>
-                <body>
+                <body id="test">
                     <div class="controller-container">
                         <button class="previous-button">Previous</button>
                         <button class="play-button">Play</button>
@@ -122,13 +121,13 @@ const handleError = (error: any) => {
 
 const handleLogin = async () => {
     const codeVerifier = generateRandomString(64);
-    const hashed = await sha256(codeVerifier);
+    const hashed = sha256(codeVerifier);
     const codeChallenge = base64encode(hashed);
 
-    const scope = "user-read-private user-read-email user-modify-playback-state";
+    const scope = "user-read-private user-read-email user-modify-playback-state user-read-currently-playing user-read-playback-state";
     const authUrl = new URL("https://accounts.spotify.com/authorize");
 
-    momento.update("code_verifier", codeVerifier);
+    memento.update("code_verifier", codeVerifier);
 
     const params = {
         response_type: "code",
@@ -150,7 +149,7 @@ const handleLogin = async () => {
         }
 
         const code = req.query.code as string;
-        getToken(code);
+        getToken(code, clientId, redirectUri, provider, memento);
 
         res.status(200).send(`
             <!DOCTYPE html>
@@ -168,49 +167,33 @@ const handleLogin = async () => {
 
         // Once authenticated, the server can close
         server.close();
+
+        // Setup player state
+        getQueue();
     });
     const server = app.listen(3000, () => console.log("Listening on port 3000!"));
 };
 
-const generateRandomString = (length: number): string => {
-    const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    const values = crypto.getRandomValues(new Uint8Array(length));
-    return values.reduce((acc, x) => acc + possible[x % possible.length], "");
-};
-
-const sha256 = (plain: string): string => {
-    return CryptoJS.SHA256(plain).toString(CryptoJS.enc.Base64url);
-};
-
-const base64encode = (input: string): string => {
-    return input.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-};
-
-const getToken = async (code: string) => {
-    let codeVerifier = momento.get("code_verifier") as string;
-
-    const payload = new URLSearchParams({
-        client_id: clientId,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri: redirectUri,
-        code_verifier: codeVerifier,
-    });
-
+const getQueue = async () => {
+    const accessToken = memento.get("access_token");
     const config = {
         headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
+            Authorization: "Bearer " + accessToken,
         },
     };
 
-    const res = await axios.post("https://accounts.spotify.com/api/token", payload, config);
+    try {
+        const res = await axios.get("https://api.spotify.com/v1/me/player/queue", config);
+        console.log(res.data);
 
-    momento.update("access_token", res.data.access_token);
-    provider.isLoggedIn();
+        provider.view?.webview.postMessage({ command: "currently_playing", queue_info: res.data });
+    } catch (error) {
+        handleError(error);
+    }
 };
 
 const handlePlay = async () => {
-    const accessToken = momento.get("access_token");
+    const accessToken = memento.get("access_token");
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -225,7 +208,7 @@ const handlePlay = async () => {
 };
 
 const handlePause = async () => {
-    const accessToken = momento.get("access_token");
+    const accessToken = memento.get("access_token");
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -234,6 +217,36 @@ const handlePause = async () => {
 
     try {
         await axios.put("https://api.spotify.com/v1/me/player/pause", {}, config);
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+const handlePrevious = async () => {
+    const accessToken = memento.get("access_token");
+    const config = {
+        headers: {
+            Authorization: "Bearer " + accessToken,
+        },
+    };
+
+    try {
+        await axios.post("https://api.spotify.com/v1/me/player/previous", {}, config);
+    } catch (error) {
+        handleError(error);
+    }
+};
+
+const handleNext = async () => {
+    const accessToken = memento.get("access_token");
+    const config = {
+        headers: {
+            Authorization: "Bearer " + accessToken,
+        },
+    };
+
+    try {
+        await axios.post("https://api.spotify.com/v1/me/player/next", {}, config);
     } catch (error) {
         handleError(error);
     }
