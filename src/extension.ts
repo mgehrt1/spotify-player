@@ -3,7 +3,7 @@ import express from "express";
 import axios from "axios";
 import { generateRandomString, sha256, base64encode, getToken } from "./auth";
 
-const clientId = ""; // TODO store this somewhere safe
+const clientId = process.env.CLIENT_ID;
 const redirectUri = "http://localhost:3000/callback";
 let myExtensionContext: vscode.ExtensionContext;
 let memento: vscode.Memento;
@@ -131,7 +131,7 @@ const handleLogin = async () => {
 
     const params = {
         response_type: "code",
-        client_id: clientId,
+        client_id: clientId || "",
         scope,
         code_challenge_method: "S256",
         code_challenge: codeChallenge,
@@ -149,7 +149,7 @@ const handleLogin = async () => {
         }
 
         const code = req.query.code as string;
-        getToken(code, clientId, redirectUri, provider, memento);
+        getToken(code, clientId || "", redirectUri, provider, memento);
 
         res.status(200).send(`
             <!DOCTYPE html>
