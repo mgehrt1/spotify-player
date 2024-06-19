@@ -3,7 +3,7 @@ import express from "express";
 import axios from "axios";
 import { generateRandomString, sha256, base64encode, getToken } from "./auth";
 
-const clientId = "f320f2d749cc4f418ec80bca8e304393"; // TODO store this somewhere safe
+const clientId = ""; // TODO store this somewhere safe
 const redirectUri = "http://localhost:3000/callback";
 let myExtensionContext: vscode.ExtensionContext;
 let memento: vscode.Memento;
