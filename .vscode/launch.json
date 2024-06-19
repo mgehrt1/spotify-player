@@ -16,9 +16,7 @@
 				"${workspaceFolder}/out/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
-            "env": {
-                "CLIENT_ID": "f320f2d749cc4f418ec80bca8e304393"
-            }
+
 		}
 	]
 }
