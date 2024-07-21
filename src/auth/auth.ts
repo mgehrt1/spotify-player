@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as crypto from "crypto";
 import CryptoJS from "crypto-js";
-import { SpotifyPlayerViewProvider } from "./extension";
+import { SpotifyPlayerViewProvider } from "../panel";
 import axios from "axios";
 
 export const generateRandomString = (length: number): string => {
@@ -37,6 +37,13 @@ export const getToken = async (code: string, clientId: string, redirectUri: stri
 
     const res = await axios.post("https://accounts.spotify.com/api/token", payload, config);
 
-    memento.update("access_token", res.data.access_token);
-    provider.isLoggedIn();
+    if (res.status === 200) {
+        memento.update("access_token", res.data.access_token);
+        return true;
+    }
+
+    // TODO
+    // provider.isLoggedIn();
+
+    return false;
 };

@@ -12,18 +12,21 @@
     "activationEvents": [],
     "main": "./out/extension.js",
     "contributes": {
-        "commands": [
-            {
-                "command": "spotify-player.helloWorld",
-                "title": "Hello World"
-            }
-        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "spotify-container",
+                    "title": "Spotify",
+                    "icon": "media/spotify_icon.svg"
+                }
+            ]
+        },
         "views": {
-            "explorer": [
+            "spotify-container": [
                 {
                     "type": "webview",
                     "id": "spotify-player",
-                    "name": "Spotify"
+                    "name": ""
                 }
             ]
         }
@@ -34,23 +37,39 @@
         "watch": "tsc -watch -p ./",
         "pretest": "npm run compile && npm run lint",
         "lint": "eslint src --ext ts",
-        "test": "vscode-test"
+        "test": "vscode-test",
+        "start-watch": "webpack --watch"
     },
     "devDependencies": {
         "@types/crypto-js": "^4.2.2",
         "@types/express": "^4.17.21",
         "@types/mocha": "^10.0.6",
         "@types/node": "18.x",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0",
         "@types/vscode": "^1.90.0",
         "@typescript-eslint/eslint-plugin": "^7.11.0",
         "@typescript-eslint/parser": "^7.11.0",
         "@vscode/test-cli": "^0.0.9",
         "@vscode/test-electron": "^2.4.0",
-        "eslint": "^8.57.0"
+        "eslint": "^8.57.0",
+        "typescript": "^5.5.3",
+        "webpack-cli": "^5.1.4"
     },
     "dependencies": {
+        "@babel/preset-env": "^7.24.8",
+        "@babel/preset-typescript": "^7.24.7",
+        "@babel/register": "^7.24.6",
         "axios": "^1.7.2",
+        "babel": "^6.23.0",
+        "babel-loader": "^9.1.3",
         "crypto-js": "^4.2.0",
-        "express": "^4.19.2"
+        "express": "^4.19.2",
+        "path": "^0.12.7",
+        "react": "^18.3.1",
+        "react-dom": "^18.3.1",
+        "react-svg": "^16.1.34",
+        "ts-loader": "^9.5.1",
+        "webpack": "^5.93.0"
     }
 }
