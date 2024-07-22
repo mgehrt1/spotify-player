@@ -71,8 +71,10 @@ export const handleLogin = async () => {
                 response: "success",
             });
 
+            await getDevices();
+
             // Setup player state
-            await getQueue();
+            await updatePlayer();
         } else {
             provider.view.webview.postMessage({
                 command: "loginResponse",
@@ -80,10 +82,10 @@ export const handleLogin = async () => {
             });
         }
     });
-    const server = app.listen(3000, () => console.log("Listening on port 3000!"));
+    const server = app.listen(3000);
 };
 
-const getQueue = async () => {
+const updatePlayer = async () => {
     const accessToken = memento.get("access_token");
     const config = {
         headers: {
@@ -144,6 +146,8 @@ export const handlePrevious = async () => {
     } catch (error) {
         handleError(error);
     }
+
+    await updatePlayer();
 };
 
 export const handleNext = async () => {
@@ -156,6 +160,25 @@ export const handleNext = async () => {
 
     try {
         await axios.post("https://api.spotify.com/v1/me/player/next", {}, config);
+    } catch (error) {
+        handleError(error);
+    }
+
+    await updatePlayer();
+};
+
+const getDevices = async () => {
+    const accessToken = memento.get("access_token");
+    const config = {
+        headers: {
+            Authorization: "Bearer " + accessToken,
+        },
+    };
+
+    try {
+        const res = await axios.get("https://api.spotify.com/v1/me/player/devices", config);
+
+        provider.view.webview.postMessage({ command: "devices", devices: res.data.devices });
     } catch (error) {
         handleError(error);
     }

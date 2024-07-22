@@ -7,7 +7,6 @@ const CurrentSong = () => {
         const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             if (message.command === "currentSong") {
-                console.log(message.currentSongInfo);
                 setSong(message.currentSongInfo);
             }
         };

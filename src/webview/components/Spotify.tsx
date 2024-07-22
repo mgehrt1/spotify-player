@@ -1,19 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import Player from "./Player";
 import Queue from "./Queue";
 import CurrentlyPlaying from "./CurrentSong";
-
-interface vscode {
-    postMessage(message: any): void;
-}
-declare const vscode: vscode;
+import Devices from "./Devices";
 
 const Spotify = () => {
+    const [selectedDevice, setSelectedDevice] = useState(null);
+
     return (
         <div className="app-container">
-            <CurrentlyPlaying />
-            <Player />
-            <Queue />
+            {selectedDevice ? (
+                <>
+                    <CurrentlyPlaying />
+                    <Player />
+                    <Queue />
+                </>
+            ) : (
+                <Devices setSelectedDevice={setSelectedDevice} />
+            )}
         </div>
     );
 };

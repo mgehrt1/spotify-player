@@ -56,7 +56,6 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
     // }
 
     private getWebviewContent(webview: vscode.Webview) {
-        // const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "media", "main.css"));
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.wv.js"));
         // const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.css"));
         // <link href="${styleUri}" rel="stylesheet">
