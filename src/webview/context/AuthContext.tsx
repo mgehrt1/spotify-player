@@ -20,11 +20,7 @@ export const AuthProvider = ({ children }) => {
         const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             if (message.command === "loginResponse") {
-                if (message.response === "success") {
-                    setIsAuthenticated(true);
-                } else {
-                    setIsAuthenticated(false);
-                }
+                setIsAuthenticated(message.response);
             }
         };
 
@@ -42,6 +38,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        vscode.postMessage({
+            command: "logout",
+        });
         setIsAuthenticated(false);
     };
 

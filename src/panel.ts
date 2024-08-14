@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import getNonce from "./nonce";
-import { handleLogin, handleNext, handlePause, handlePlay, handlePrevious } from "./extension";
+import * as API from "./extension";
 
 export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
     public static readonly viewType = "spotify-player";
@@ -25,19 +25,25 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
             (message) => {
                 switch (message.command) {
                     case "login":
-                        handleLogin();
+                        API.handleLogin();
+                        break;
+                    case "logout":
+                        API.handleLogout();
                         break;
                     case "play":
-                        handlePlay();
+                        API.handlePlay();
                         break;
                     case "pause":
-                        handlePause();
+                        API.handlePause();
                         break;
                     case "previous":
-                        handlePrevious();
+                        API.handlePrevious();
                         break;
                     case "next":
-                        handleNext();
+                        API.handleNext();
+                        break;
+                    case "updatePlayer":
+                        API.updatePlayer();
                         break;
                     default:
                         break;
@@ -47,13 +53,6 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
             undefined
         );
     }
-
-    // public isLoggedIn() {
-    //     const access_token = this.memento.get("access_token");
-    //     if (this.view && access_token) {
-    //         this.view.webview.postMessage({ command: "login" });
-    //     }
-    // }
 
     private getWebviewContent(webview: vscode.Webview) {
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.wv.js"));

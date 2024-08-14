@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { ReactSVG } from "react-svg";
+import React, { useEffect, useRef, useState } from "react";
 
 interface vscode {
     postMessage(message: any): void;
@@ -11,7 +10,30 @@ const Player = () => {
     const PAUSE = "pause";
     const PREVIOUS = "previous";
     const NEXT = "next";
-    const [isPlaying, setIsPlaying] = useState(false);
+
+    const [isPlaying, setIsPlaying] = useState<boolean>(true);
+    const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(0);
+    const [currentTrackProgress, setCurrentTrackProgress] = useState<number>(0);
+
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const buttonStyles = { background: "none", border: "none", cursor: "pointer" };
+
+    useEffect(() => {
+        const handleMessage = (event: MessageEvent) => {
+            const message = event.data;
+            if (message.command === "time") {
+                setCurrentTrackDuration(message.timeInfo.item.duration_ms);
+                setCurrentTrackProgress(message.timeInfo.progress_ms);
+            }
+        };
+
+        window.addEventListener("message", handleMessage);
+
+        return () => {
+            window.removeEventListener("message", handleMessage);
+        };
+    }, []);
 
     const buttonClick = (message: string) => {
         if (isPlaying && message === PAUSE) {
@@ -24,27 +46,86 @@ const Player = () => {
         });
     };
 
+    const updatePlayerState = () => {
+        vscode.postMessage({
+            command: "updatePlayer",
+        });
+    };
+
+    const trackSongEnd = () => {
+        const timeRemaining = currentTrackDuration - currentTrackProgress;
+        if (timeRemaining > 0) {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+
+            timeoutRef.current = setTimeout(() => {
+                updatePlayerState();
+            }, timeRemaining);
+        }
+    };
+
+    useEffect(() => {
+        if (isPlaying && currentTrackDuration > 0) {
+            trackSongEnd();
+        }
+    }, [isPlaying, currentTrackDuration, currentTrackProgress]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout | undefined;
+        if (isPlaying) {
+            interval = setInterval(() => {
+                setCurrentTrackProgress((prevProgress) => {
+                    const newProgress = prevProgress + 1000; // Increment by 1 second
+                    if (newProgress >= currentTrackDuration) {
+                        clearInterval(interval);
+                        return currentTrackDuration; // Cap at the track duration
+                    }
+                    return newProgress;
+                });
+            }, 1000);
+        }
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [isPlaying, currentTrackDuration]);
+
+    const progressPercentage = (currentTrackProgress / currentTrackDuration) * 100;
+
     return (
         <div className="controller-container">
-            <button className="previous-button" onClick={() => buttonClick(PREVIOUS)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+            <div className="progress-bar-container" style={{ width: "100%", background: "#e0e0e0", height: "10px", borderRadius: "5px", overflow: "hidden", marginBottom: "10px" }}>
+                <div
+                    className="progress-bar"
+                    style={{
+                        width: `${progressPercentage}%`,
+                        height: "100%",
+                        background: "#1db954", // Spotify green
+                        transition: "width 0.1s linear",
+                    }}
+                ></div>
+            </div>
+            <button className="previous-button" onClick={() => buttonClick(PREVIOUS)} style={buttonStyles}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ transform: "scaleX(-1)" }}>
                     <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                 </svg>
             </button>
             {isPlaying ? (
-                <button className="pause-button" onClick={() => buttonClick(PAUSE)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <button className="pause-button" onClick={() => buttonClick(PAUSE)} style={buttonStyles}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z" />
                     </svg>
                 </button>
             ) : (
-                <button className="play-button" onClick={() => buttonClick(PLAY)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+                <button className="play-button" onClick={() => buttonClick(PLAY)} style={buttonStyles}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path d="M3 22v-20l18 10-18 10z" />
                     </svg>
                 </button>
             )}
-            <button className="next-button" onClick={() => buttonClick(NEXT)} style={{ background: "none", border: "none", cursor: "pointer" }}>
+            <button className="next-button" onClick={() => buttonClick(NEXT)} style={buttonStyles}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                 </svg>
