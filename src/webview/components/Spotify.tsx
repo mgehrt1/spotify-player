@@ -1,11 +1,11 @@
 import React from "react";
 import Player from "./Player";
-import CurrentlyPlaying from "./CurrentSong";
+import CurrentSong from "./CurrentSong";
 
 const Spotify = () => {
     return (
         <div className="app-container">
-            <CurrentlyPlaying />
+            <CurrentSong />
             <Player />
         </div>
     );

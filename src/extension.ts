@@ -123,12 +123,10 @@ export const updatePlayer = async () => {
     };
 
     try {
-        const playerRes = await axios.get("https://api.spotify.com/v1/me/player", config);
-        const queueRes = await axios.get("https://api.spotify.com/v1/me/player/queue", config);
+        const res = await axios.get("https://api.spotify.com/v1/me/player", config);
 
-        provider.view.webview.postMessage({ command: "time", timeInfo: playerRes.data });
-        provider.view.webview.postMessage({ command: "queue", queueInfo: queueRes.data.queue });
-        provider.view.webview.postMessage({ command: "currentSong", currentSongInfo: queueRes.data.currently_playing });
+        provider.view.webview.postMessage({ command: "time", timeInfo: res.data });
+        provider.view.webview.postMessage({ command: "currentSong", currentSongInfo: res.data.item });
     } catch (error) {
         handleError(error);
     }
