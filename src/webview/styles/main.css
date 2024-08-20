@@ -1,0 +1,66 @@
+html, body, #root {
+    height: 100%;
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+.song-title {
+    margin: 0 4px;
+}
+
+.song-artists {
+    margin: 0 4px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.flipped-x {
+    transform: scaleX(-1);
+}
+
+.progress-bar-container {
+    width: 100%;
+    background: #e0e0e0;
+    height: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.logout-button {
+    margin-top: auto;
+    margin-bottom: 20px;
+}
+
+.vscode-button {
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    align-items: center;
+    border: 1px solid var(--vscode-button-border, transparent);
+    border-radius: 2px;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    line-height: 18px;
+    padding: 4px;
+    text-align: center;
+    width: 100%;
+}
+
+.vscode-button:hover {
+    background-color: var(--vscode-button-hoverBackground);
+}

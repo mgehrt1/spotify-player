@@ -22,8 +22,8 @@ const CurrentSong = () => {
 
     return (
         <>
-            <h2>{song?.name}</h2>
-            <h3>{artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h3>
+            <h2 className="song-title">{song?.name}</h2>
+            <h3 className="song-artists">{artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h3>
             <img src={song?.album?.images[0].url} alt="Album art" />
         </>
     );

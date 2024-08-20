@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as webpack from "webpack";
+import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 const extConfig: webpack.Configuration = {
     mode: "development",
@@ -13,12 +14,11 @@ const extConfig: webpack.Configuration = {
     resolve: { extensions: [".ts", ".js"] },
     module: { rules: [{ test: /\.ts$/, loader: "ts-loader" }] },
     externals: { vscode: "vscode" },
-    watch: true, // Enable watch mode
-    // Optional: Watch options can be configured here
+    watch: true,
     watchOptions: {
-        aggregateTimeout: 300, // Delay in ms after the last change to rebuild
-        poll: 1000, // Check for changes every second
-        ignored: /node_modules/, // Ignore changes in node_modules
+        aggregateTimeout: 300,
+        poll: 1000,
+        ignored: /node_modules/,
     },
     devtool: "source-map",
 };
@@ -39,16 +39,20 @@ const webviewConfig: webpack.Configuration = {
             { test: /\.tsx?$/, use: ["babel-loader", "ts-loader"] },
             {
                 test: /\.css$/,
-                use: ["style-loader", "css-loader"],
+                use: [MiniCssExtractPlugin.loader, "css-loader"],
             },
         ],
     },
-    watch: true, // Enable watch mode
-    // Optional: Watch options can be configured here
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: "[name].wv.css",
+        }),
+    ],
+    watch: true,
     watchOptions: {
-        aggregateTimeout: 300, // Delay in ms after the last change to rebuild
-        poll: 1000, // Check for changes every second
-        ignored: /node_modules/, // Ignore changes in node_modules
+        aggregateTimeout: 300,
+        poll: 1000,
+        ignored: /node_modules/,
     },
     devtool: "source-map",
 };

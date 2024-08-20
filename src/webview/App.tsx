@@ -8,7 +8,7 @@ const AppContent = () => {
     const { isAuthenticated } = useAuth();
 
     return (
-        <div>
+        <div className="app-container">
             {isAuthenticated ? (
                 <>
                     <Spotify />

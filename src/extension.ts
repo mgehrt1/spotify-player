@@ -13,15 +13,16 @@ const closeTab = `<!DOCTYPE html><html><head><title>Close Tab</title></head><bod
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
 
-    // const access_token = getAccessToken();
-
-    // if (!access_token) {
-
-    // }
-
     provider = new SpotifyPlayerViewProvider(context.extensionUri);
 
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SpotifyPlayerViewProvider.viewType, provider));
+
+    const interval = setInterval(async () => {
+        if (provider.view?.webview) {
+            clearInterval(interval);
+            await updateLoginState();
+        }
+    }, 100);
 }
 
 const handleError = (error: any) => {
@@ -32,8 +33,14 @@ const handleError = (error: any) => {
     }
 };
 
-const getAccessToken = () => {
-    return extensionContext?.globalState.get("access_token");
+const getAccessToken = async () => {
+    const expirationTime = extensionContext.globalState.get<number>("token_expiration_time");
+
+    if (expirationTime && Date.now() > expirationTime) {
+        await refreshAccessToken();
+    }
+
+    return extensionContext.globalState.get("access_token");
 };
 
 const getToken = async (code: string, codeVerifier: string) => {
@@ -52,6 +59,44 @@ const getToken = async (code: string, codeVerifier: string) => {
     };
 
     return await axios.post("https://accounts.spotify.com/api/token", payload, config);
+};
+
+const refreshAccessToken = async () => {
+    const refreshToken = extensionContext.globalState.get("refresh_token");
+
+    const config = {
+        params: {
+            grant_type: "refresh_token",
+            refresh_token: refreshToken,
+            client_id: clientId,
+        },
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    };
+
+    const res = await axios.post("https://accounts.spotify.com/api/token", {}, config);
+
+    console.log(res);
+
+    extensionContext.globalState.update("access_token", res.data.access_token);
+    extensionContext.globalState.update("token_expiration_time", Date.now() + res.data.expires_in * 1000);
+
+    // Only update refresh token if a new one if provided, else continue with the old one
+    if (res.data.refresh_token) {
+        extensionContext.globalState.update("refresh_token", res.data.refresh_token);
+    }
+};
+
+export const updateLoginState = async () => {
+    if (await getAccessToken()) {
+        provider.view.webview.postMessage({
+            command: "loginResponse",
+            response: true,
+        });
+    }
+
+    await updatePlayer();
 };
 
 export const handleLogin = async () => {
@@ -83,8 +128,11 @@ export const handleLogin = async () => {
 
         const tokenData = await getToken(req.query.code as string, codeVerifier);
 
+        console.log(tokenData);
+
         extensionContext.globalState.update("access_token", tokenData.data.access_token);
         extensionContext.globalState.update("refresh_token", tokenData.data.refresh_token);
+        extensionContext.globalState.update("token_expiration_time", Date.now() + tokenData.data.expires_in * 1000);
 
         res.status(200).send(closeTab);
 
@@ -115,7 +163,7 @@ export const handleLogout = () => {
 };
 
 export const updatePlayer = async () => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -133,7 +181,7 @@ export const updatePlayer = async () => {
 };
 
 export const handlePlay = async () => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -150,7 +198,7 @@ export const handlePlay = async () => {
 };
 
 export const handlePause = async () => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -165,7 +213,7 @@ export const handlePause = async () => {
 };
 
 export const handlePrevious = async () => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -182,7 +230,7 @@ export const handlePrevious = async () => {
 };
 
 export const handleNext = async () => {
-    const accessToken = getAccessToken();
+    const accessToken = await getAccessToken();
     const config = {
         headers: {
             Authorization: "Bearer " + accessToken,
@@ -191,6 +239,26 @@ export const handleNext = async () => {
 
     try {
         await axios.post("https://api.spotify.com/v1/me/player/next", {}, config);
+    } catch (error) {
+        handleError(error);
+    }
+
+    await updatePlayer();
+};
+
+export const handleSeek = async (newProgress: number) => {
+    const accessToken = await getAccessToken();
+    const config = {
+        headers: {
+            Authorization: "Bearer " + accessToken,
+        },
+        params: {
+            position_ms: newProgress,
+        },
+    };
+
+    try {
+        await axios.put("https://api.spotify.com/v1/me/player/seek", {}, config);
     } catch (error) {
         handleError(error);
     }

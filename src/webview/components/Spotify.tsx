@@ -4,10 +4,10 @@ import CurrentSong from "./CurrentSong";
 
 const Spotify = () => {
     return (
-        <div className="app-container">
+        <>
             <CurrentSong />
             <Player />
-        </div>
+        </>
     );
 };
 

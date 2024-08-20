@@ -19,7 +19,11 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this.getWebviewContent(webviewView.webview);
 
-        // provider.isLoggedIn(); TODO: add back once we figure out how to revalidate every hour
+        this.view.onDidChangeVisibility(async () => {
+            if (this.view.visible) {
+                await API.updateLoginState();
+            }
+        });
 
         webviewView.webview.onDidReceiveMessage(
             (message) => {
@@ -42,6 +46,9 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
                     case "next":
                         API.handleNext();
                         break;
+                    case "seek":
+                        API.handleSeek(message.newProgress);
+                        break;
                     case "updatePlayer":
                         API.updatePlayer();
                         break;
@@ -56,8 +63,7 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
 
     private getWebviewContent(webview: vscode.Webview) {
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.wv.js"));
-        // const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.css"));
-        // <link href="${styleUri}" rel="stylesheet">
+        const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(this.extensionUri, "out", "main.wv.css"));
 
         const nonce = getNonce();
 
@@ -65,8 +71,9 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
 			<html lang="en">
                 <head>
                     <meta charset="UTF-8">
-                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src https://i.scdn.co http://www.w3.org;">
+                    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline' ${webview.cspSource}; script-src 'nonce-${nonce}'; img-src https://i.scdn.co http://www.w3.org;">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <link href="${styleUri}" rel="stylesheet">
                     <title>Spotify Player</title>
                 </head>
                 <body>

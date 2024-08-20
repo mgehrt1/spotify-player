@@ -17,14 +17,14 @@ const Player = () => {
 
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-    const buttonStyles = { background: "none", border: "none", cursor: "pointer" };
-
     useEffect(() => {
         const handleMessage = (event: MessageEvent) => {
             const message = event.data;
             if (message.command === "time") {
                 setCurrentTrackDuration(message.timeInfo.item.duration_ms);
                 setCurrentTrackProgress(message.timeInfo.progress_ms);
+            } else if (message.commannd === "seekResponse" && message.success) {
+                // setCurrentTrackDuration(message.progress);
             }
         };
 
@@ -94,9 +94,21 @@ const Player = () => {
 
     const progressPercentage = (currentTrackProgress / currentTrackDuration) * 100;
 
+    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        const progressBar = e.currentTarget;
+        const clickPosition = e.clientX - progressBar.getBoundingClientRect().left;
+        const progressBarWidth = progressBar.clientWidth;
+        const newProgress = Math.floor((clickPosition / progressBarWidth) * currentTrackDuration);
+
+        vscode.postMessage({
+            command: "seek",
+            newProgress: newProgress,
+        });
+    };
+
     return (
         <div className="controller-container">
-            <div className="progress-bar-container" style={{ width: "100%", background: "#e0e0e0", height: "10px", borderRadius: "5px", overflow: "hidden", marginBottom: "10px" }}>
+            <div className="progress-bar-container" onClick={handleProgressClick}>
                 <div
                     className="progress-bar"
                     style={{
@@ -107,25 +119,25 @@ const Player = () => {
                     }}
                 ></div>
             </div>
-            <button className="previous-button" onClick={() => buttonClick(PREVIOUS)} style={buttonStyles}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style={{ transform: "scaleX(-1)" }}>
+            <button className="icon-button flipped-x" onClick={() => buttonClick(PREVIOUS)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                 </svg>
             </button>
             {isPlaying ? (
-                <button className="pause-button" onClick={() => buttonClick(PAUSE)} style={buttonStyles}>
+                <button className="icon-button" onClick={() => buttonClick(PAUSE)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z" />
                     </svg>
                 </button>
             ) : (
-                <button className="play-button" onClick={() => buttonClick(PLAY)} style={buttonStyles}>
+                <button className="icon-button" onClick={() => buttonClick(PLAY)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                         <path d="M3 22v-20l18 10-18 10z" />
                     </svg>
                 </button>
             )}
-            <button className="next-button" onClick={() => buttonClick(NEXT)} style={buttonStyles}>
+            <button className="icon-button" onClick={() => buttonClick(NEXT)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                 </svg>

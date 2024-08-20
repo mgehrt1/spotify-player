@@ -52,7 +52,10 @@
         "@typescript-eslint/parser": "^7.11.0",
         "@vscode/test-cli": "^0.0.9",
         "@vscode/test-electron": "^2.4.0",
+        "css-loader": "^7.1.2",
         "eslint": "^8.57.0",
+        "mini-css-extract-plugin": "^2.9.1",
+        "style-loader": "^4.0.0",
         "typescript": "^5.5.3",
         "webpack-cli": "^5.1.4"
     },
