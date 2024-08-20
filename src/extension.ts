@@ -37,7 +37,12 @@ const getAccessToken = async () => {
     const expirationTime = extensionContext.globalState.get<number>("token_expiration_time");
 
     if (expirationTime && Date.now() > expirationTime) {
-        await refreshAccessToken();
+        try {
+            await refreshAccessToken();
+        } catch (error) {
+            handleError(error);
+            return null;
+        }
     }
 
     return extensionContext.globalState.get("access_token");
@@ -47,7 +52,7 @@ const getToken = async (code: string, codeVerifier: string) => {
     const payload = new URLSearchParams({
         client_id: clientId,
         grant_type: "authorization_code",
-        code,
+        code: code,
         redirect_uri: redirectUri,
         code_verifier: codeVerifier,
     });
@@ -77,8 +82,6 @@ const refreshAccessToken = async () => {
 
     const res = await axios.post("https://accounts.spotify.com/api/token", {}, config);
 
-    console.log(res);
-
     extensionContext.globalState.update("access_token", res.data.access_token);
     extensionContext.globalState.update("token_expiration_time", Date.now() + res.data.expires_in * 1000);
 
@@ -94,13 +97,13 @@ export const updateLoginState = async () => {
             command: "loginResponse",
             response: true,
         });
+        await updatePlayer();
     }
-
-    await updatePlayer();
 };
 
 export const handleLogin = async () => {
     const codeVerifier = generateRandomString(64);
+    extensionContext.globalState.update("code_verifier", codeVerifier);
     const hashed = sha256(codeVerifier);
     const codeChallenge = base64encode(hashed);
 
@@ -109,8 +112,8 @@ export const handleLogin = async () => {
 
     const params = {
         response_type: "code",
-        client_id: clientId || "",
-        scope,
+        client_id: clientId,
+        scope: scope,
         code_challenge_method: "S256",
         code_challenge: codeChallenge,
         redirect_uri: redirectUri,
@@ -126,9 +129,8 @@ export const handleLogin = async () => {
             res.status(409).send(error);
         }
 
-        const tokenData = await getToken(req.query.code as string, codeVerifier);
-
-        console.log(tokenData);
+        const storedCodeVerifier = extensionContext.globalState.get<string>("code_verifier");
+        const tokenData = await getToken(req.query.code as string, storedCodeVerifier);
 
         extensionContext.globalState.update("access_token", tokenData.data.access_token);
         extensionContext.globalState.update("refresh_token", tokenData.data.refresh_token);
@@ -160,6 +162,8 @@ export const handleLogin = async () => {
 export const handleLogout = () => {
     extensionContext.globalState.update("access_token", null);
     extensionContext.globalState.update("refresh_token", null);
+    extensionContext.globalState.update("token_expiration_time", null);
+    extensionContext.globalState.update("code_verifier", null);
 };
 
 export const updatePlayer = async () => {
