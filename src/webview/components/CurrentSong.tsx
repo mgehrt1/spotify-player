@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import MessageContext from "../context/MessageContext";
 
 const CurrentSong = () => {
+    const { registerHandler } = useContext(MessageContext);
     const [song, setSong] = useState<any>();
     const [artists, setArtists] = useState<any[]>([]);
 
     useEffect(() => {
-        const handleMessage = (event: MessageEvent) => {
-            const message = event.data;
-            if (message.command === "currentSong") {
-                setSong(message.currentSongInfo);
-                setArtists(message.currentSongInfo.artists);
-            }
+        const handleCurrentSong = (message: any) => {
+            setSong(message.currentSongInfo);
+            setArtists(message.currentSongInfo.artists);
         };
 
-        window.addEventListener("message", handleMessage);
-
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
+        registerHandler("currentSong", handleCurrentSong);
     }, []);
 
     return (

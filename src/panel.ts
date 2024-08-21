@@ -19,15 +19,12 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
 
         webviewView.webview.html = this.getWebviewContent(webviewView.webview);
 
-        this.view.onDidChangeVisibility(async () => {
-            if (this.view.visible) {
-                await API.updateLoginState();
-            }
-        });
-
         webviewView.webview.onDidReceiveMessage(
             (message) => {
                 switch (message.command) {
+                    case "init":
+                        API.updateLoginState();
+                        break;
                     case "login":
                         API.handleLogin();
                         break;
@@ -59,6 +56,12 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
             undefined,
             undefined
         );
+
+        this.view.onDidChangeVisibility(async () => {
+            if (this.view.visible) {
+                await API.updateLoginState();
+            }
+        });
     }
 
     private getWebviewContent(webview: vscode.Webview) {
@@ -80,6 +83,7 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
                     <div id="root"></div>
                     <script nonce="${nonce}">
                         const vscode = acquireVsCodeApi();
+                        vscode.postMessage({ command: 'init' });
                     </script>
                     <script nonce="${nonce}" src="${scriptUri}"></script>
                 </body>

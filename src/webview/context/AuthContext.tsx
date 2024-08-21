@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import MessageContext from "./MessageContext";
 
 interface vscode {
     postMessage(message: any): void;
@@ -14,21 +15,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }) => {
+    const { registerHandler } = useContext(MessageContext);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
     useEffect(() => {
-        const handleMessage = (event: MessageEvent) => {
-            const message = event.data;
-            if (message.command === "loginResponse") {
-                setIsAuthenticated(message.response);
-            }
+        const handleLoginResponse = (message: any) => {
+            setIsAuthenticated(message.response);
         };
 
-        window.addEventListener("message", handleMessage);
-
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
+        registerHandler("loginResponse", handleLoginResponse);
     }, []);
 
     const login = () => {

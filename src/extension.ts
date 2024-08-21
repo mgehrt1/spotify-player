@@ -16,13 +16,6 @@ export function activate(context: vscode.ExtensionContext) {
     provider = new SpotifyPlayerViewProvider(context.extensionUri);
 
     context.subscriptions.push(vscode.window.registerWebviewViewProvider(SpotifyPlayerViewProvider.viewType, provider));
-
-    const interval = setInterval(async () => {
-        if (provider.view?.webview) {
-            clearInterval(interval);
-            await updateLoginState();
-        }
-    }, 100);
 }
 
 const handleError = (error: any) => {
@@ -40,7 +33,7 @@ const getAccessToken = async () => {
         try {
             await refreshAccessToken();
         } catch (error) {
-            handleError(error);
+            console.error(error);
             return null;
         }
     }
@@ -93,6 +86,7 @@ const refreshAccessToken = async () => {
 
 export const updateLoginState = async () => {
     if (await getAccessToken()) {
+        await new Promise((resolve) => setTimeout(resolve, 100)); // wait 100ms
         provider.view.webview.postMessage({
             command: "loginResponse",
             response: true,
@@ -195,7 +189,7 @@ export const handlePlay = async () => {
     try {
         await axios.put("https://api.spotify.com/v1/me/player/play", {}, config);
 
-        updatePlayer();
+        await updatePlayer();
     } catch (error) {
         handleError(error);
     }

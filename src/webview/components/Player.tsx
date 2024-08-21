@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import MessageContext from "../context/MessageContext";
 
 interface vscode {
     postMessage(message: any): void;
@@ -11,6 +12,7 @@ const Player = () => {
     const PREVIOUS = "previous";
     const NEXT = "next";
 
+    const { registerHandler } = useContext(MessageContext);
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
     const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(0);
     const [currentTrackProgress, setCurrentTrackProgress] = useState<number>(0);
@@ -18,21 +20,12 @@ const Player = () => {
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        const handleMessage = (event: MessageEvent) => {
-            const message = event.data;
-            if (message.command === "time") {
-                setCurrentTrackDuration(message.timeInfo.item.duration_ms);
-                setCurrentTrackProgress(message.timeInfo.progress_ms);
-            } else if (message.commannd === "seekResponse" && message.success) {
-                // setCurrentTrackDuration(message.progress);
-            }
+        const handleTime = (message: any) => {
+            setCurrentTrackDuration(message.timeInfo.item.duration_ms);
+            setCurrentTrackProgress(message.timeInfo.progress_ms);
         };
 
-        window.addEventListener("message", handleMessage);
-
-        return () => {
-            window.removeEventListener("message", handleMessage);
-        };
+        registerHandler("time", handleTime);
     }, []);
 
     const buttonClick = (message: string) => {
