@@ -26,7 +26,7 @@
                 {
                     "type": "webview",
                     "id": "spotify-player",
-                    "name": ""
+                    "name": "Player"
                 }
             ]
         }
