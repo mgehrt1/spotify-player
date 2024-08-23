@@ -3,8 +3,9 @@ html, body, #root {
     margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6, p {
     margin: 0;
+    color: var(--vscode-foreground);
 }
 
 .app-container {
@@ -77,7 +78,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .progress-bar-container {
     width: 100%;
-    background: #7e7e7e;
+    background: var(--vscode-button-background);;
     height: 6px;
     border-radius: 5px;
     overflow: hidden;
@@ -96,7 +97,7 @@ h1, h2, h3, h4, h5, h6 {
     background: none;
     border: none;
     cursor: pointer;
-    fill: var(--vscode-editor-foreground);;
+    fill: var(--vscode-foreground);
 }
 
 .flipped-x {

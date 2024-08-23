@@ -31,6 +31,7 @@ const Player = () => {
         const handleTime = (message: any) => {
             setCurrentTrackDuration(message.timeInfo.item.duration_ms);
             setCurrentTrackProgress(message.timeInfo.progress_ms);
+            setIsPlaying(message.timeInfo.is_playing);
         };
 
         registerHandler("time", handleTime);
@@ -109,7 +110,6 @@ const Player = () => {
     // Update player state every 5 seconds so it always stays synced
     useEffect(() => {
         const interval = setInterval(() => {
-            console.log("HERE");
             updatePlayerState();
         }, 5000);
         return () => {
