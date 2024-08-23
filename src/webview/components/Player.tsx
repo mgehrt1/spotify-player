@@ -17,7 +17,15 @@ const Player = () => {
     const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(0);
     const [currentTrackProgress, setCurrentTrackProgress] = useState<number>(0);
 
+    const previousClickRef = useRef<number | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const refreshRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        refreshRef.current = setTimeout(() => {
+            updatePlayerState();
+        }, 5000);
+    }, []);
 
     useEffect(() => {
         const handleTime = (message: any) => {
@@ -37,6 +45,19 @@ const Player = () => {
         vscode.postMessage({
             command: message,
         });
+    };
+
+    const handlePreviousClick = () => {
+        const now = Date.now();
+        const doubleClickThreshold = 2000;
+
+        if (previousClickRef.current && now - previousClickRef.current < doubleClickThreshold) {
+            vscode.postMessage({ command: PREVIOUS });
+        } else {
+            vscode.postMessage({ command: "seek", newProgress: 0 });
+        }
+
+        previousClickRef.current = now;
     };
 
     const updatePlayerState = () => {
@@ -85,6 +106,19 @@ const Player = () => {
         };
     }, [isPlaying, currentTrackDuration]);
 
+    // Update player state every 5 seconds so it always stays synced
+    useEffect(() => {
+        const interval = setInterval(() => {
+            console.log("HERE");
+            updatePlayerState();
+        }, 5000);
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, []);
+
     const progressPercentage = (currentTrackProgress / currentTrackDuration) * 100;
 
     const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -112,29 +146,31 @@ const Player = () => {
                     }}
                 ></div>
             </div>
-            <button className="icon-button flipped-x" onClick={() => buttonClick(PREVIOUS)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
-                </svg>
-            </button>
-            {isPlaying ? (
-                <button className="icon-button" onClick={() => buttonClick(PAUSE)}>
+            <div className="player-controls">
+                <button className="icon-button flipped-x" onClick={handlePreviousClick}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z" />
+                        <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                     </svg>
                 </button>
-            ) : (
-                <button className="icon-button" onClick={() => buttonClick(PLAY)}>
+                {isPlaying ? (
+                    <button className="icon-button" onClick={() => buttonClick(PAUSE)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="M11 22h-4v-20h4v20zm6-20h-4v20h4v-20z" />
+                        </svg>
+                    </button>
+                ) : (
+                    <button className="icon-button" onClick={() => buttonClick(PLAY)}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="M3 22v-20l18 10-18 10z" />
+                        </svg>
+                    </button>
+                )}
+                <button className="icon-button" onClick={() => buttonClick(NEXT)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                        <path d="M3 22v-20l18 10-18 10z" />
+                        <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
                     </svg>
                 </button>
-            )}
-            <button className="icon-button" onClick={() => buttonClick(NEXT)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-                    <path d="M19 12l-18 12v-24l18 12zm4-11h-4v22h4v-22z" />
-                </svg>
-            </button>
+            </div>
         </div>
     );
 };

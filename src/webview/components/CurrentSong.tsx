@@ -61,10 +61,10 @@ const CurrentSong = () => {
             </div>
             <div className="scrolling-container">
                 <div className="scrolling-text song-artists" ref={artistsRef}>
-                    <h3>{artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h3>
+                    <h4>{artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h4>
                 </div>
             </div>
-            <img src={song?.album?.images[0].url} alt="Album art" />
+            <img className="album-art" src={song?.album?.images[0].url} alt="Album art" />
         </div>
     );
 };

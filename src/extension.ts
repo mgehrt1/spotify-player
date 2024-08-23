@@ -92,6 +92,12 @@ export const updateLoginState = async () => {
             response: true,
         });
         await updatePlayer();
+    } else {
+        await new Promise((resolve) => setTimeout(resolve, 100)); // wait 100ms
+        provider.view.webview.postMessage({
+            command: "loginResponse",
+            response: false,
+        });
     }
 };
 

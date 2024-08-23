@@ -11,30 +11,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     min-height: 100%;
-}
-
-.icon-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.flipped-x {
-    transform: scaleX(-1);
-}
-
-.progress-bar-container {
-    width: 100%;
-    background: #e0e0e0;
-    height: 10px;
-    border-radius: 5px;
-    overflow: hidden;
-    margin-bottom: 10px;
-}
-
-.logout-button {
-    margin-top: auto;
-    margin-bottom: 20px;
+    max-width: 300px;
 }
 
 .vscode-button {
@@ -57,11 +34,6 @@ h1, h2, h3, h4, h5, h6 {
     background-color: var(--vscode-button-hoverBackground);
 }
 
-.song-title, .song-artists {
-    margin: 0 4px;
-    will-change: transform;
-}
-
 .current-song {
     display: flex;
     flex-direction: column;
@@ -71,6 +43,7 @@ h1, h2, h3, h4, h5, h6 {
 .scrolling-container {
     width: 100%;
     overflow: hidden;
+    margin-bottom: 4px;
 }
 
 .scrolling-text {
@@ -89,4 +62,55 @@ h1, h2, h3, h4, h5, h6 {
     90%, 100% {
         transform: translateX(0);
     }
+}
+
+.album-art {
+    margin-top: 8px;
+}
+
+.controller-container {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.progress-bar-container {
+    width: 100%;
+    background: #7e7e7e;
+    height: 6px;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.player-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    fill: var(--vscode-editor-foreground);;
+}
+
+.flipped-x {
+    transform: scaleX(-1);
+}
+
+
+
+
+
+
+
+
+.logout-button {
+    margin-top: auto;
+    margin-bottom: 20px;
 }

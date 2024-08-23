@@ -20,34 +20,34 @@ export class SpotifyPlayerViewProvider implements vscode.WebviewViewProvider {
         webviewView.webview.html = this.getWebviewContent(webviewView.webview);
 
         webviewView.webview.onDidReceiveMessage(
-            (message) => {
+            async (message) => {
                 switch (message.command) {
                     case "init":
-                        API.updateLoginState();
+                        await API.updateLoginState();
                         break;
                     case "login":
-                        API.handleLogin();
+                        await API.handleLogin();
                         break;
                     case "logout":
                         API.handleLogout();
                         break;
                     case "play":
-                        API.handlePlay();
+                        await API.handlePlay();
                         break;
                     case "pause":
-                        API.handlePause();
+                        await API.handlePause();
                         break;
                     case "previous":
-                        API.handlePrevious();
+                        await API.handlePrevious();
                         break;
                     case "next":
-                        API.handleNext();
+                        await API.handleNext();
                         break;
                     case "seek":
-                        API.handleSeek(message.newProgress);
+                        await API.handleSeek(message.newProgress);
                         break;
                     case "updatePlayer":
-                        API.updatePlayer();
+                        await API.updatePlayer();
                         break;
                     default:
                         break;

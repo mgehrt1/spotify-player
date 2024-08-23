@@ -5,11 +5,13 @@ import Spotify from "./components/Spotify";
 import Logout from "./components/Logout";
 
 const AppContent = () => {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, isLoading } = useAuth();
 
     return (
         <div className="app-container">
-            {isAuthenticated ? (
+            {isLoading ? (
+                <></>
+            ) : isAuthenticated ? (
                 <>
                     <Spotify />
                     <Logout />
