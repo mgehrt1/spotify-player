@@ -4,7 +4,7 @@ import axios from "axios";
 import { generateRandomString, sha256, base64encode } from "./utils/auth";
 import express, { Request, Response } from "express";
 
-const clientId = process.env.CLIENT_ID;
+const clientId = "f320f2d749cc4f418ec80bca8e304393";
 const redirectUri = "http://localhost:3000/callback";
 let extensionContext: vscode.ExtensionContext;
 let provider: SpotifyPlayerViewProvider;
