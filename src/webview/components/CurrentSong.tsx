@@ -1,10 +1,16 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import MessageContext from "../context/MessageContext";
 
+interface vscode {
+    postMessage(message: any): void;
+    getState(): any;
+    setState(state: any): void;
+}
+declare const vscode: vscode;
+
 const CurrentSong = () => {
     const { registerHandler } = useContext(MessageContext);
-    const [song, setSong] = useState<any>();
-    const [artists, setArtists] = useState<any[]>([]);
+    const [song, setSong] = useState<any>(vscode.getState()?.currentSongInfo || null);
 
     const titleRef = useRef<HTMLDivElement>(null);
     const artistsRef = useRef<HTMLDivElement>(null);
@@ -12,7 +18,12 @@ const CurrentSong = () => {
     useEffect(() => {
         const handleCurrentSong = (message: any) => {
             setSong(message.currentSongInfo);
-            setArtists(message.currentSongInfo.artists);
+
+            const currentState = vscode.getState() || {};
+            vscode.setState({
+                ...currentState,
+                currentSongInfo: message.currentSongInfo,
+            });
         };
 
         registerHandler("currentSong", handleCurrentSong);
@@ -50,7 +61,7 @@ const CurrentSong = () => {
         window.addEventListener("resize", updateScrollDistance);
 
         return () => window.removeEventListener("resize", updateScrollDistance);
-    }, [song, artists]);
+    }, [song]);
 
     return (
         <div className="current-song">
@@ -61,7 +72,7 @@ const CurrentSong = () => {
             </div>
             <div className="scrolling-container">
                 <div className="scrolling-text song-artists" ref={artistsRef}>
-                    <h4>{artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h4>
+                    <h4>{song?.artists?.map((artistInfo) => artistInfo.name)?.join(", ")}</h4>
                 </div>
             </div>
             <img className="album-art" src={song?.album?.images[0].url} alt="Album art" />

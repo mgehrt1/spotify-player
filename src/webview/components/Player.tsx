@@ -3,6 +3,8 @@ import MessageContext from "../context/MessageContext";
 
 interface vscode {
     postMessage(message: any): void;
+    getState(): any;
+    setState(state: any): void;
 }
 declare const vscode: vscode;
 
@@ -13,25 +15,28 @@ const Player = () => {
     const NEXT = "next";
 
     const { registerHandler } = useContext(MessageContext);
-    const [isPlaying, setIsPlaying] = useState<boolean>(true);
-    const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(0);
-    const [currentTrackProgress, setCurrentTrackProgress] = useState<number>(0);
+    const [isPlaying, setIsPlaying] = useState<boolean>(vscode.getState()?.timeInfo?.isPlaying || true);
+    const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(vscode.getState()?.timeInfo?.currentTrackDuration || 0);
+    const [currentTrackProgress, setCurrentTrackProgress] = useState<number>(vscode.getState()?.timeInfo?.currentTrackProgress || 0);
 
     const previousClickRef = useRef<number | null>(null);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const refreshRef = useRef<NodeJS.Timeout | null>(null);
-
-    useEffect(() => {
-        refreshRef.current = setTimeout(() => {
-            updatePlayerState();
-        }, 5000);
-    }, []);
 
     useEffect(() => {
         const handleTime = (message: any) => {
             setCurrentTrackDuration(message.timeInfo.item.duration_ms);
             setCurrentTrackProgress(message.timeInfo.progress_ms);
             setIsPlaying(message.timeInfo.is_playing);
+
+            const currentState = vscode.getState() || {};
+            vscode.setState({
+                ...currentState,
+                timeInfo: {
+                    currentTrackDuration: message.timeInfo.item.duration_ms,
+                    currentTrackProgress: message.timeInfo.progress_ms,
+                    isPlaying: message.timeInfo.is_playing,
+                },
+            });
         };
 
         registerHandler("time", handleTime);
