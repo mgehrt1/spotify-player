@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { SpotifyPlayerViewProvider } from "./panel";
 import axios from "axios";
-import { generateRandomString, sha256, base64encode } from "./utils/auth";
+import { generateRandomString, sha256, base64encode } from "./auth";
 import express, { Request, Response } from "express";
 
 const clientId = "f320f2d749cc4f418ec80bca8e304393";
@@ -179,6 +179,7 @@ export const updatePlayer = async () => {
 
         provider.view.webview.postMessage({ command: "time", timeInfo: res.data });
         provider.view.webview.postMessage({ command: "currentSong", currentSongInfo: res.data.item });
+        provider.view.webview.postMessage({ command: "content", response: res.status === 200 });
     } catch (error) {
         handleError(error);
     }

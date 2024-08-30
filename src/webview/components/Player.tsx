@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
 import MessageContext from "../context/MessageContext";
+import { updatePlayerState } from "./utils/PlayerUtils";
 
 interface vscode {
     postMessage(message: any): void;
@@ -8,12 +9,12 @@ interface vscode {
 }
 declare const vscode: vscode;
 
-const Player = () => {
-    const PLAY = "play";
-    const PAUSE = "pause";
-    const PREVIOUS = "previous";
-    const NEXT = "next";
+const PLAY = "play";
+const PAUSE = "pause";
+const PREVIOUS = "previous";
+const NEXT = "next";
 
+const Player = () => {
     const { registerHandler } = useContext(MessageContext);
     const [isPlaying, setIsPlaying] = useState<boolean>(vscode.getState()?.timeInfo?.isPlaying || true);
     const [currentTrackDuration, setCurrentTrackDuration] = useState<number>(vscode.getState()?.timeInfo?.currentTrackDuration || 0);
@@ -24,7 +25,7 @@ const Player = () => {
 
     useEffect(() => {
         const handleTime = (message: any) => {
-            setCurrentTrackDuration(message.timeInfo.item.duration_ms);
+            setCurrentTrackDuration(message.timeInfo.item?.duration_ms);
             setCurrentTrackProgress(message.timeInfo.progress_ms);
             setIsPlaying(message.timeInfo.is_playing);
 
@@ -32,7 +33,7 @@ const Player = () => {
             vscode.setState({
                 ...currentState,
                 timeInfo: {
-                    currentTrackDuration: message.timeInfo.item.duration_ms,
+                    currentTrackDuration: message.timeInfo.item?.duration_ms,
                     currentTrackProgress: message.timeInfo.progress_ms,
                     isPlaying: message.timeInfo.is_playing,
                 },
@@ -64,12 +65,6 @@ const Player = () => {
         }
 
         previousClickRef.current = now;
-    };
-
-    const updatePlayerState = () => {
-        vscode.postMessage({
-            command: "updatePlayer",
-        });
     };
 
     const trackSongEnd = () => {
@@ -111,18 +106,6 @@ const Player = () => {
             }
         };
     }, [isPlaying, currentTrackDuration]);
-
-    // Update player state every 5 seconds so it always stays synced
-    useEffect(() => {
-        const interval = setInterval(() => {
-            updatePlayerState();
-        }, 5000);
-        return () => {
-            if (interval) {
-                clearInterval(interval);
-            }
-        };
-    }, []);
 
     const progressPercentage = (currentTrackProgress / currentTrackDuration) * 100;
 
