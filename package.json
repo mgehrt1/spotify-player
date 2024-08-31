@@ -4,7 +4,7 @@
     "description": "Allows users to control their Spotify music through VSCode",
     "version": "0.0.1",
     "license": "MIT",
-    "publisher": "matthew-gehrt",
+    "publisher": "MatthewGehrt",
     "engines": {
         "vscode": "^1.90.0"
     },
