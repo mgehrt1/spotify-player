@@ -2,8 +2,10 @@ import * as path from "path";
 import * as webpack from "webpack";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
+const isProduction = true;
+
 const extConfig: webpack.Configuration = {
-    mode: "production",
+    mode: isProduction ? "production" : "development",
     target: "node",
     entry: "./src/extension.ts",
     output: {
@@ -14,7 +16,7 @@ const extConfig: webpack.Configuration = {
     resolve: { extensions: [".ts", ".js"] },
     module: { rules: [{ test: /\.ts$/, loader: "ts-loader" }] },
     externals: { vscode: "vscode" },
-    watch: true,
+    watch: !isProduction,
     watchOptions: {
         aggregateTimeout: 300,
         poll: 1000,
@@ -24,7 +26,7 @@ const extConfig: webpack.Configuration = {
 };
 
 const webviewConfig: webpack.Configuration = {
-    mode: "production",
+    mode: isProduction ? "production" : "development",
     target: "web",
     entry: "./src/webview/index.tsx",
     output: {
@@ -48,7 +50,7 @@ const webviewConfig: webpack.Configuration = {
             filename: "[name].wv.css",
         }),
     ],
-    watch: true,
+    watch: !isProduction,
     watchOptions: {
         aggregateTimeout: 300,
         poll: 1000,
