@@ -21,6 +21,12 @@ Install all dependencies.
 npm install
 ```
 
+Build the extension
+
+```
+npm run watch
+```
+
 Debug using F5 to run the extension.
 
 ## Known Issues
