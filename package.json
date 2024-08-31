@@ -3,6 +3,7 @@
     "displayName": "Spotify Player",
     "description": "Allows users to control their Spotify music through VSCodee",
     "version": "0.0.1",
+    "license": "MIT",
     "publisher": "matthew-gehrt",
     "engines": {
         "vscode": "^1.90.0"
