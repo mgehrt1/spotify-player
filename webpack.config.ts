@@ -3,7 +3,7 @@ import * as webpack from "webpack";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 
 const extConfig: webpack.Configuration = {
-    mode: "development",
+    mode: "production",
     target: "node",
     entry: "./src/extension.ts",
     output: {
@@ -24,7 +24,7 @@ const extConfig: webpack.Configuration = {
 };
 
 const webviewConfig: webpack.Configuration = {
-    mode: "development",
+    mode: "production",
     target: "web",
     entry: "./src/webview/index.tsx",
     output: {
